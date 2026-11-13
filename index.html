@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>QBerries · Permisos RR.HH.</title>
+    <link rel="icon" type="image/png" href="assets/logo-qberries.png" />
+    <link rel="apple-touch-icon" href="assets/logo-qberries.png" />
+    <meta name="theme-color" content="#e30613" />
+    <meta name="qberries-api" content="https://script.google.com/macros/s/AKfycbwewS3UBCCOVaGFXgJykDX8uEoEWPgDxJwPzvZc3XlBpxCto8XYnASwG4WWlXhssqd3/exec" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" /></noscript>
+    <link rel="stylesheet" href="css/shell.css?v=20261113g" />
+    <link rel="stylesheet" href="css/styles.css?v=20261113g" />
+    <link rel="stylesheet" href="css/dashboard.css?v=20261113g" />
+    <link rel="stylesheet" href="css/responsive.css?v=20261113g" />
+    <link rel="stylesheet" href="css/permisos.css?v=20261113h" />
+  </head>
+  <body>
+    <div id="backdrop" class="backdrop"></div>
+    <aside id="sidebar" class="sidebar">
+      <a class="brand" href="#/dashboard">
+        <img src="assets/logo-qberries.png" alt="QBerries" width="168" height="156" decoding="async" />
+      </a>
+      <nav class="nav">
+        <p class="nav-label">Operación</p>
+        <a href="#/dashboard" class="on">
+          <svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1z"/></svg>
+          Dashboard
+        </a>
+        <a href="#/detalle">
+          <svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"/><path d="M8 15v-4M12 15V8M16 15v-7"/></svg>
+          Detalle permisos
+        </a>
+        <p class="nav-label">Sistema</p>
+        <a href="#/movimientos">
+          <svg viewBox="0 0 24 24"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="8"/></svg>
+          Movimientos
+        </a>
+      </nav>
+      <div class="side-card">
+        <strong>Panel RR.HH.</strong>
+        <small>Consulta los pases de salida registrados. Imprima el PDF para firma del responsable de permisos.</small>
+      </div>
+    </aside>
+
+    <div class="shell">
+      <header class="topbar">
+        <button id="menu" class="icon-btn menu-btn" type="button" aria-label="Menú">☰</button>
+        <label class="search-bar">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="q" type="search" placeholder="Buscar DNI, nombres o responsable…" />
+        </label>
+        <div class="top-actions">
+          <button id="refresh-btn" class="icon-btn" type="button" aria-label="Actualizar">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 3v6h-6"/></svg>
+          </button>
+          <div class="hello-wrap">
+            <button type="button" class="hello" id="hello-btn" aria-haspopup="true" aria-expanded="false">
+              <span class="hello-pic"><img src="assets/logo-qberries.png" alt="" width="36" height="36" /></span>
+              <span class="hello-meta">
+                <strong id="hello-name">RR.HH.</strong>
+                <small>Permisos</small>
+              </span>
+            </button>
+            <div id="hello-menu" class="hello-menu" hidden>
+              <p class="hello-menu-name" id="hello-menu-name">RR.HH.</p>
+              <button type="button" id="logout-btn">Cerrar sesión</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="page on" data-page="dashboard">
+          <header class="dash-head dash-head-perm">
+            <div class="filters">
+              <label class="field"><span>Fecha</span><input id="f-fecha" type="date" aria-label="Fecha" /></label>
+              <label class="field"><span>Rango</span>
+                <select id="f-rango" aria-label="Rango">
+                  <option value="todas">Todas las fechas</option>
+                  <option value="dia">Solo un día</option>
+                </select>
+              </label>
+              <label class="field"><span>Motivo</span><select id="f-motivo" aria-label="Motivo"></select></label>
+            </div>
+            <div class="kpis kpis-icons" aria-live="polite">
+              <article class="kpi kpi-colab">
+                <div class="kpi-ico" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <div class="kpi-body">
+                  <div class="label">Personal</div>
+                  <div class="value" id="kpi-colab">0</div>
+                </div>
+              </article>
+              <article class="kpi kpi-salud">
+                <div class="kpi-ico" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M19 14c1.5-1.3 2-3.2 0-5.2C16.5 6 14 7.2 12 9.5 10 7.2 7.5 6 5 8.8c-2 2-1.5 3.9 0 5.2L12 21z"/></svg>
+                </div>
+                <div class="kpi-body">
+                  <div class="label">Salud</div>
+                  <div class="value" id="kpi-salud">0</div>
+                </div>
+              </article>
+              <article class="kpi kpi-vb">
+                <div class="kpi-ico" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+                </div>
+                <div class="kpi-body">
+                  <div class="label">Visto bueno</div>
+                  <div class="value" id="kpi-vb">0</div>
+                </div>
+              </article>
+              <article class="kpi kpi-ok">
+                <div class="kpi-ico" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20 6 9 17l-5-5"/></svg>
+                </div>
+                <div class="kpi-body">
+                  <div class="label">Todo bien</div>
+                  <div class="value" id="kpi-ok">0</div>
+                </div>
+              </article>
+            </div>
+          </header>
+
+          <div class="toolbar">
+            <p id="src-status" class="src-status">Cargando…</p>
+            <div class="tools">
+              <button type="button" class="ghost-btn" id="btn-reload">Actualizar</button>
+            </div>
+          </div>
+
+          <section class="table-panel">
+            <div class="table-head">
+              <h2>Permisos recientes</h2>
+              <div class="table-tools">
+                <input id="q-table" type="search" placeholder="Buscar…" />
+                <a class="ghost-btn" href="#/detalle">Ver completo</a>
+                <span id="dash-table-count"></span>
+              </div>
+            </div>
+            <div class="table-scroll">
+              <table class="he perm-table">
+                <thead><tr id="dash-table-head"></tr></thead>
+                <tbody id="dash-table-body"></tbody>
+              </table>
+            </div>
+            <div class="table-footbar"><div id="dash-table-pager"></div></div>
+          </section>
+        </section>
+
+        <section class="page" data-page="detalle">
+          <div class="page-title">
+            <h1>Detalle de permisos</h1>
+            <p id="detalle-chip">Reporte completo. Filtre de fecha a fecha y exporte a Excel.</p>
+          </div>
+          <div class="detalle-filters filters">
+            <label class="field"><span>Desde</span><input id="f-desde" type="date" aria-label="Desde" /></label>
+            <label class="field"><span>Hasta</span><input id="f-hasta" type="date" aria-label="Hasta" /></label>
+            <label class="field"><span>Motivo</span><select id="f-motivo-detalle" aria-label="Motivo detalle"></select></label>
+          </div>
+          <section class="table-panel table-panel-lg">
+            <div class="table-head">
+              <h2>Registros</h2>
+              <div class="table-tools">
+                <input id="q-detalle" type="search" placeholder="Buscar…" />
+                <button type="button" class="ghost-btn" id="btn-excel">Excel</button>
+                <button type="button" class="tool-btn" id="btn-pdf-lista">PDF lista</button>
+                <span id="table-count"></span>
+              </div>
+            </div>
+            <div class="table-scroll table-scroll-lg">
+              <table class="he perm-table">
+                <thead><tr id="table-head"></tr></thead>
+                <tbody id="table-body"></tbody>
+              </table>
+            </div>
+            <div class="table-footbar"><div id="table-pager"></div></div>
+          </section>
+        </section>
+
+        <section class="page" data-page="movimientos">
+          <div class="page-title">
+            <h1>Movimientos del sistema</h1>
+            <p>Quién filtró, actualizó o imprimió, con fecha y hora.</p>
+          </div>
+          <section class="table-panel">
+            <div class="table-head">
+              <h2>Historial</h2>
+              <span id="audit-count"></span>
+            </div>
+            <div class="table-scroll">
+              <table class="he">
+                <thead>
+                  <tr>
+                    <th>Fecha y hora</th>
+                    <th>Usuario</th>
+                    <th>Acción</th>
+                    <th>Detalle</th>
+                  </tr>
+                </thead>
+                <tbody id="audit-body"></tbody>
+              </table>
+            </div>
+            <div class="table-footbar"><div id="audit-pager"></div></div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
+    <div id="loading" class="loading" hidden>
+      <div class="loading-card"><span class="spin"></span><span id="loading-text">Cargando…</span></div>
+    </div>
+
+    <div id="pdf-preview" class="pdf-preview" hidden>
+      <div class="pdf-preview-card pdf-preview-card-wide">
+        <header class="pdf-preview-head">
+          <h2>QU-GH-FR-16 · Incidencias del personal</h2>
+          <button type="button" class="icon-btn" id="pdf-close" aria-label="Cerrar">✕</button>
+        </header>
+        <div id="pdf-body" class="pdf-body pdf-body-fr16"></div>
+        <footer class="pdf-preview-foot">
+          <button type="button" class="ghost-btn" id="pdf-cancel">Cerrar</button>
+          <button type="button" class="ghost-btn" id="pdf-download">Descargar .PDF</button>
+          <button type="button" class="tool-btn" id="pdf-print">Imprimir</button>
+        </footer>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="vendor/html2pdf.bundle.min.js?v=20261113d"></script>
+    <script src="js/config.js?v=20261113d"></script>
+    <script src="js/performance.js?v=20261113d"></script>
+    <script src="js/audit.js?v=20261113d"></script>
+    <script src="js/api.js?v=20261113d"></script>
+    <script src="js/data.js?v=20261113d"></script>
+    <script src="js/selects.js?v=20261113d"></script>
+    <script src="js/filters.js?v=20261113d"></script>
+    <script src="js/kpis.js?v=20261113d"></script>
+    <script src="js/table.js?v=20261113d"></script>
+    <script src="js/pdf.js?v=20261113h"></script>
+    <script src="js/app.js?v=20261113d"></script>
+    <script src="js/auth.js?v=20261113d"></script>
+    <script src="js/shell.js?v=20261113d"></script>
+  </body>
+</html>
