@@ -26,7 +26,9 @@
     filtered = QBE.data.filterRows(pack.records, f);
     var kpis = QBE.data.computeKpis(filtered);
     QBE.kpis.render(kpis);
+    if (QBE.kpis.trend) QBE.kpis.trend(filtered);
     QBE.table.render(filtered);
+    if (QBE.briefs && QBE.briefs.refresh) QBE.briefs.refresh();
   }
   function usePack(next, source) {
     var rows = QBE.data.normalizeAll((next && (next.data || next.records)) || []);
@@ -128,10 +130,12 @@
     // Siempre trae todas las fechas: el filtro (día / desde-hasta) es en el cliente
     return { todas: true, limit: 3000 };
   }
-  function reload() {
+  function reload(opts) {
+    var silent = !!(opts && opts.silent === true);
     if (busy) return Promise.resolve();
     busy = true;
-    setLoading(true, "Cargando permisos…");
+    if (!silent) setLoading(true, "Cargando permisos…");
+    if (QBE.kpis && QBE.kpis.cloud) QBE.kpis.cloud(silent ? 72 : 18, "Bajando información");
     var params = loadParams();
     return Promise.resolve()
       .then(function () {
@@ -141,7 +145,7 @@
       .then(function (data) {
         if (data && (data.data || data.records)) {
           usePack(data, "api");
-          if (QBE.audit) QBE.audit.add("Actualizar", (data.total || (data.data || []).length) + " permisos");
+          if (!silent && QBE.audit) QBE.audit.add("Actualizar", (data.total || (data.data || []).length) + " permisos");
           return;
         }
         setStatus("La API no devolvió permisos.", "warn");
@@ -155,7 +159,8 @@
       })
       .finally(function () {
         busy = false;
-        setLoading(false);
+        if (!silent) setLoading(false);
+        if (QBE.kpis && QBE.kpis.cloud) QBE.kpis.cloud(100, "Analizando data de campo");
       });
   }
   function boot() {
@@ -181,7 +186,17 @@
       });
     }
     reload();
+    setInterval(function () {
+      if (document.hidden) return;
+      var h = String(location.hash || "#/dashboard");
+      if (h !== "#/dashboard" && h !== "" && h !== "#") return;
+      reload({ silent: true });
+      if (QBE.campo && QBE.campo.reload) QBE.campo.reload(true);
+    }, 25000);
   }
 
-  QBE.app = { boot: boot, reload: reload, refresh: refresh };
+  function records() {
+    return pack.records.slice();
+  }
+  QBE.app = { boot: boot, reload: reload, refresh: refresh, records: records };
 })(typeof window !== "undefined" ? window : globalThis);

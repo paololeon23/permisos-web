@@ -58,6 +58,10 @@
     var count = document.getElementById("audit-count");
     if (!body) return;
     var rows = load();
+    var movN = document.getElementById("hr-mov");
+    var movS = document.getElementById("side-mov");
+    if (movN) movN.textContent = String(rows.length);
+    if (movS) movS.textContent = String(rows.length);
     var pages = Math.max(1, Math.ceil(rows.length / SIZE));
     if (page > pages) page = pages;
     if (page < 1) page = 1;

@@ -49,8 +49,10 @@
       return '<span class="pill ' + (ok ? "pill-ok" : "pill-mute") + '">' + (ok ? "OK" : "—") + "</span>";
     }
     if (c.key === "motivo") {
-      var kind = QBE.data.motivoBadge(r.motivo);
-      return '<span class="pill pill-' + kind + '">' + esc(r.motivo || "—") + "</span>";
+      var tipo = QBE.data.tipoRegistro(r);
+      var tipoCls = tipo === "Incidencia" ? "pill-incid" : "pill-pase";
+      var motivoTxt = r.motivo ? '<span class="motivo-sub">' + esc(r.motivo) + "</span>" : "";
+      return '<span class="pill ' + tipoCls + '">' + esc(tipo) + "</span>" + motivoTxt;
     }
     return esc(r[c.key] || "—");
   }

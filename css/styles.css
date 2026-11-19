@@ -257,9 +257,9 @@ select option:hover {
   font-variant-numeric: tabular-nums;
 }
 .kpi-hrs { background: #7cba3d; }
-.kpi-imp { background: #e30613; min-width: 156px; }
+.kpi-imp { background: #c96b00; min-width: 156px; }
 .kpi-imp .value { font-size: 18px; }
-.kpi-colab { background: #f39200; min-width: 148px; }
+.kpi-colab { background: #c96b00; min-width: 148px; }
 .kpi-colab .value { font-size: 22px; }
 .toolbar {
   display: flex;

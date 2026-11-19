@@ -227,7 +227,7 @@ table.he thead th {
   padding: 11px 12px;
   white-space: nowrap;
   border-bottom: 3px solid var(--green);
-  cursor: pointer;
+  cursor: default;
   z-index: 1;
   font-size: 12px;
   letter-spacing: 0.02em;

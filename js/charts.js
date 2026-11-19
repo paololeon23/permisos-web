@@ -3,11 +3,11 @@
   var QBE = root.QBE || (root.QBE = {});
   var charts = {};
   var COLORS = {
-    h25: "#e30613",
+    h25: "#c96b00",
     h35: "#8dc63f",
     h100: "#ffd100",
-    c25: "#e30613",
-    c35: "#f39200",
+    c25: "#c96b00",
+    c35: "#c96b00",
     c100: "#8dc63f",
     week: "#8dc63f",
     text: "#4b5563",

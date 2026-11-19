@@ -6,17 +6,17 @@
     <title>QBerries · Permisos RR.HH.</title>
     <link rel="icon" type="image/png" href="assets/logo-qberries.png" />
     <link rel="apple-touch-icon" href="assets/logo-qberries.png" />
-    <meta name="theme-color" content="#e30613" />
+    <meta name="theme-color" content="#c96b00" />
     <meta name="qberries-api" content="https://script.google.com/macros/s/AKfycbwewS3UBCCOVaGFXgJykDX8uEoEWPgDxJwPzvZc3XlBpxCto8XYnASwG4WWlXhssqd3/exec" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
     <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" /></noscript>
-    <link rel="stylesheet" href="css/shell.css?v=20261113g" />
-    <link rel="stylesheet" href="css/styles.css?v=20261113g" />
-    <link rel="stylesheet" href="css/dashboard.css?v=20261113g" />
-    <link rel="stylesheet" href="css/responsive.css?v=20261113g" />
-    <link rel="stylesheet" href="css/permisos.css?v=20261113h" />
+    <link rel="stylesheet" href="css/shell.css?v=20261119n" />
+    <link rel="stylesheet" href="css/styles.css?v=20261119d" />
+    <link rel="stylesheet" href="css/dashboard.css?v=20261119d" />
+    <link rel="stylesheet" href="css/responsive.css?v=20261119d" />
+    <link rel="stylesheet" href="css/permisos.css?v=20261119pdf" />
   </head>
   <body>
     <div id="backdrop" class="backdrop"></div>
@@ -31,8 +31,12 @@
           Dashboard
         </a>
         <a href="#/detalle">
-          <svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"/><path d="M8 15v-4M12 15V8M16 15v-7"/></svg>
+          <svg viewBox="0 0 24 24"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>
           Detalle permisos
+        </a>
+        <a href="#/campo">
+          <svg viewBox="0 0 24 24"><path d="M10.3 4.2 2.8 17.5A2 2 0 0 0 4.5 20.5h15a2 2 0 0 0 1.7-3L14.7 4.2a2 2 0 0 0-3.4 0z"/><path d="M12 9.5v4M12 17h.01"/></svg>
+          Incidencia Campo
         </a>
         <p class="nav-label">Sistema</p>
         <a href="#/movimientos">
@@ -41,9 +45,15 @@
         </a>
       </nav>
       <div class="side-card">
-        <strong>Panel RR.HH.</strong>
-        <small>Consulta los pases de salida registrados. Imprima el PDF para firma del responsable de permisos.</small>
+        <strong>Control interno</strong>
+        <ul class="side-mods">
+          <li><a href="#/detalle">Permisos</a><b id="side-perm">—</b></li>
+          <li><a href="#/campo">Incidencia Campo</a><b id="side-campo">—</b></li>
+          <li><a href="#/movimientos">Movimientos</a><b id="side-mov">—</b></li>
+        </ul>
+        <small>Personal, permisos, incidencias y seguimiento en un solo sistema.</small>
       </div>
+      <button type="button" class="side-logout" data-logout>Cerrar sesión</button>
     </aside>
 
     <div class="shell">
@@ -57,6 +67,19 @@
           <button id="refresh-btn" class="icon-btn" type="button" aria-label="Actualizar">
             <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 3v6h-6"/></svg>
           </button>
+          <div class="note-wrap">
+            <button id="note-btn" class="icon-btn" type="button" aria-label="Quién entró" aria-haspopup="true" aria-expanded="false">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 14 6 8z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
+              <b id="note-count" class="note-badge" hidden>0</b>
+            </button>
+            <div id="note-panel" class="note-panel" hidden>
+              <header class="note-head">
+                <p>Hoy, en este momento</p>
+                <h3>Quién entró</h3>
+              </header>
+              <ul id="note-list" class="note-list"></ul>
+            </div>
+          </div>
           <div class="hello-wrap">
             <button type="button" class="hello" id="hello-btn" aria-haspopup="true" aria-expanded="false">
               <span class="hello-pic"><img src="assets/logo-qberries.png" alt="" width="36" height="36" /></span>
@@ -67,7 +90,7 @@
             </button>
             <div id="hello-menu" class="hello-menu" hidden>
               <p class="hello-menu-name" id="hello-menu-name">RR.HH.</p>
-              <button type="button" id="logout-btn">Cerrar sesión</button>
+              <button type="button" id="logout-btn" data-logout>Cerrar sesión</button>
             </div>
           </div>
         </div>
@@ -75,80 +98,102 @@
 
       <main class="workspace">
         <section class="page on" data-page="dashboard">
-          <header class="dash-head dash-head-perm">
-            <div class="filters">
-              <label class="field"><span>Fecha</span><input id="f-fecha" type="date" aria-label="Fecha" /></label>
-              <label class="field"><span>Rango</span>
-                <select id="f-rango" aria-label="Rango">
-                  <option value="todas">Todas las fechas</option>
-                  <option value="dia">Solo un día</option>
-                </select>
-              </label>
-              <label class="field"><span>Motivo</span><select id="f-motivo" aria-label="Motivo"></select></label>
+          <div class="hero-row">
+          <section class="welcome-card" aria-label="Bienvenida">
+            <div class="welcome-photo">
+              <img src="assets/persona.png" alt="Equipo QBerries" />
             </div>
-            <div class="kpis kpis-icons" aria-live="polite">
-              <article class="kpi kpi-colab">
-                <div class="kpi-ico" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                </div>
-                <div class="kpi-body">
-                  <div class="label">Personal</div>
-                  <div class="value" id="kpi-colab">0</div>
-                </div>
-              </article>
-              <article class="kpi kpi-salud">
-                <div class="kpi-ico" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M19 14c1.5-1.3 2-3.2 0-5.2C16.5 6 14 7.2 12 9.5 10 7.2 7.5 6 5 8.8c-2 2-1.5 3.9 0 5.2L12 21z"/></svg>
-                </div>
-                <div class="kpi-body">
-                  <div class="label">Salud</div>
-                  <div class="value" id="kpi-salud">0</div>
-                </div>
-              </article>
-              <article class="kpi kpi-vb">
-                <div class="kpi-ico" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
-                </div>
-                <div class="kpi-body">
-                  <div class="label">Visto bueno</div>
-                  <div class="value" id="kpi-vb">0</div>
-                </div>
-              </article>
-              <article class="kpi kpi-ok">
-                <div class="kpi-ico" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20 6 9 17l-5-5"/></svg>
-                </div>
-                <div class="kpi-body">
-                  <div class="label">Todo bien</div>
-                  <div class="value" id="kpi-ok">0</div>
-                </div>
-              </article>
-            </div>
-          </header>
-
-          <div class="toolbar">
-            <p id="src-status" class="src-status">Cargando…</p>
-            <div class="tools">
-              <button type="button" class="ghost-btn" id="btn-reload">Actualizar</button>
-            </div>
-          </div>
-
-          <section class="table-panel">
-            <div class="table-head">
-              <h2>Permisos recientes</h2>
-              <div class="table-tools">
-                <input id="q-table" type="search" placeholder="Buscar…" />
-                <a class="ghost-btn" href="#/detalle">Ver completo</a>
-                <span id="dash-table-count"></span>
+            <div class="welcome-text">
+              <p class="welcome-kicker">Panel de RR.HH. · QBerries</p>
+              <h1>Bienvenido al resumen de permisos</h1>
+              <p>Aquí ve el estado del personal, las medidas del día y cómo se mueven los permisos.</p>
+              <div class="welcome-chips">
+                <span>Formulario QU-GH-FR-16</span>
+                <span>Datos de BD-PERMISOS</span>
               </div>
             </div>
-            <div class="table-scroll">
-              <table class="he perm-table">
-                <thead><tr id="dash-table-head"></tr></thead>
-                <tbody id="dash-table-body"></tbody>
-              </table>
+          </section>
+          <aside class="cloud-card" id="cloud-card" aria-label="Descarga en tiempo real">
+            <div class="cloud-top">
+              <span class="live-pill"><i></i>Tiempo real</span>
+              <svg class="cloud-ico" viewBox="0 0 64 48" aria-hidden="true">
+                <path d="M18 36h28a10 10 0 0 0 1.2-19.9A14 14 0 0 0 20 12.2 11 11 0 0 0 18 36z"/>
+                <g class="cloud-drops">
+                  <path d="M24 40v6"/><path d="M32 42v8"/><path d="M40 40v6"/>
+                </g>
+              </svg>
             </div>
-            <div class="table-footbar"><div id="dash-table-pager"></div></div>
+            <p class="cloud-kicker">Nube QBerries</p>
+            <p class="cloud-pct" id="cloud-pct">0%</p>
+            <p class="cloud-note" id="cloud-note">Bajando información</p>
+            <div class="cloud-track"><i id="cloud-bar"></i></div>
+            <p class="cloud-sub">Sincronización continua</p>
+          </aside>
+          </div>
+
+          <section class="hr-board" aria-label="Control interno">
+            <div class="hr-head">
+              <h2>Control de RR.HH.</h2>
+              <p>Entre a cada módulo. Los números salen de permisos, campo y las alertas del día.</p>
+            </div>
+            <div class="hr-grid">
+              <a class="hr-mod" href="#/detalle">
+                <span>Permisos</span>
+                <strong id="hr-perm">0</strong>
+                <small>Registros del formulario QU-GH-FR-16</small>
+              </a>
+              <a class="hr-mod" href="#/campo">
+                <span>Incidencia Campo</span>
+                <strong id="hr-campo">0</strong>
+                <small>Registros de la hoja. Busque un DNI para el historial</small>
+              </a>
+              <a class="hr-mod" href="#/movimientos">
+                <span>Movimientos</span>
+                <strong id="hr-mov">0</strong>
+                <small>Quién filtró, actualizó o imprimió</small>
+              </a>
+              <a class="hr-mod hr-mod-alert" href="#/dashboard">
+                <span>Alertas de hoy</span>
+                <strong id="hr-alertas">0</strong>
+                <small>Incidencias que entraron en este momento</small>
+              </a>
+            </div>
+          </section>
+
+          <section class="brief-row" aria-label="Seguimiento del día">
+            <article class="brief-card">
+              <header class="brief-head">
+                <span class="brief-photo"><img src="assets/alertas.png" alt="" /></span>
+                <div>
+                  <p>Hoy, en este momento</p>
+                  <h2>Alertas</h2>
+                </div>
+              </header>
+              <ul class="brief-list" id="brief-alertas"></ul>
+              <button type="button" class="brief-more" data-brief="alertas">Ver más</button>
+            </article>
+            <article class="brief-card">
+              <header class="brief-head">
+                <span class="brief-photo"><img src="assets/arandano.png" alt="" /></span>
+                <div>
+                  <p>Más de 3 registros</p>
+                  <h2>En observación</h2>
+                </div>
+              </header>
+              <ul class="brief-list" id="brief-observa"></ul>
+              <button type="button" class="brief-more" data-brief="observa">Ver más</button>
+            </article>
+            <article class="brief-card">
+              <header class="brief-head">
+                <span class="brief-photo"><img src="assets/calendario.png" alt="" /></span>
+                <div>
+                  <p>Para revisar hoy</p>
+                  <h2>Permisos de hoy</h2>
+                </div>
+              </header>
+              <ul class="brief-list" id="brief-hoy"></ul>
+              <button type="button" class="brief-more" data-brief="hoy">Ver más</button>
+            </article>
           </section>
         </section>
 
@@ -156,6 +201,32 @@
           <div class="page-title">
             <h1>Detalle de permisos</h1>
             <p id="detalle-chip">Reporte completo. Filtre de fecha a fecha y exporte a Excel.</p>
+          </div>
+          <div class="kpis kpis-icons campo-kpis" aria-live="polite">
+            <article class="kpi kpi-colab">
+              <div class="kpi-body">
+                <div class="label">Registros</div>
+                <div class="value" id="det-kpi-n">0</div>
+              </div>
+            </article>
+            <article class="kpi kpi-vb">
+              <div class="kpi-body">
+                <div class="label">Personal</div>
+                <div class="value" id="det-kpi-p">0</div>
+              </div>
+            </article>
+            <article class="kpi kpi-ok">
+              <div class="kpi-body">
+                <div class="label">Salud</div>
+                <div class="value" id="det-kpi-s">0</div>
+              </div>
+            </article>
+            <article class="kpi kpi-salud">
+              <div class="kpi-body">
+                <div class="label">Visto bueno</div>
+                <div class="value" id="det-kpi-v">0</div>
+              </div>
+            </article>
           </div>
           <div class="detalle-filters filters">
             <label class="field"><span>Desde</span><input id="f-desde" type="date" aria-label="Desde" /></label>
@@ -169,7 +240,6 @@
                 <input id="q-detalle" type="search" placeholder="Buscar…" />
                 <button type="button" class="ghost-btn" id="btn-excel">Excel</button>
                 <button type="button" class="tool-btn" id="btn-pdf-lista">PDF lista</button>
-                <span id="table-count"></span>
               </div>
             </div>
             <div class="table-scroll table-scroll-lg">
@@ -179,6 +249,72 @@
               </table>
             </div>
             <div class="table-footbar"><div id="table-pager"></div></div>
+          </section>
+        </section>
+
+        <section class="page" data-page="campo">
+          <div class="page-title">
+            <h1>Incidencia Campo</h1>
+            <p id="campo-chip">Acumulados de la hoja. Busque un DNI para ver a una persona.</p>
+          </div>
+          <div class="kpis kpis-icons campo-kpis" aria-live="polite">
+            <article class="kpi kpi-colab">
+              <div class="kpi-body">
+                <div class="label">Registros</div>
+                <div class="value" id="campo-kpi-n">0</div>
+              </div>
+            </article>
+            <article class="kpi kpi-vb">
+              <div class="kpi-body">
+                <div class="label">Personal</div>
+                <div class="value" id="campo-kpi-p">0</div>
+              </div>
+            </article>
+            <article class="kpi kpi-ok">
+              <div class="kpi-body">
+                <div class="label">Crítico</div>
+                <div class="value" id="campo-kpi-c">0</div>
+              </div>
+            </article>
+            <article class="kpi kpi-salud">
+              <div class="kpi-body">
+                <div class="label">Medida</div>
+                <div class="value" id="campo-kpi-m">0</div>
+              </div>
+            </article>
+          </div>
+          <div class="detalle-filters filters">
+            <label class="field"><span>Desde</span><input id="campo-desde" type="date" aria-label="Desde campo" /></label>
+            <label class="field"><span>Hasta</span><input id="campo-hasta" type="date" aria-label="Hasta campo" /></label>
+            <label class="field"><span>Motivo</span>
+              <select id="campo-motivo" aria-label="Motivo campo">
+                <option value="*">Todos los motivos</option>
+                <option value="instruccion">Instrucción</option>
+                <option value="tardia">Tardía</option>
+                <option value="falta">Inasistencia</option>
+                <option value="epp">EPP</option>
+                <option value="bpa">BPA</option>
+                <option value="fruta">Fruta</option>
+                <option value="conducta">Conducta</option>
+              </select>
+            </label>
+          </div>
+          <section class="table-panel table-panel-lg">
+            <div class="table-head">
+              <h2>Acumulados</h2>
+              <div class="table-tools">
+                <input id="campo-dni" type="search" inputmode="numeric" placeholder="DNI (historial)" aria-label="Buscar por DNI" />
+                <button type="button" class="tool-btn" id="campo-buscar">Buscar</button>
+                <button type="button" class="ghost-btn" id="campo-hoy">Hoy</button>
+              </div>
+            </div>
+            <div class="table-scroll table-scroll-lg">
+              <table class="he campo-table">
+                <thead><tr id="campo-head"></tr></thead>
+                <tbody id="campo-body"></tbody>
+              </table>
+            </div>
+            <div class="table-footbar"><div id="campo-pager"></div></div>
           </section>
         </section>
 
@@ -216,6 +352,34 @@
       <div class="loading-card"><span class="spin"></span><span id="loading-text">Cargando…</span></div>
     </div>
 
+    <div id="brief-modal" class="brief-modal" hidden>
+      <div class="brief-dialog" role="dialog" aria-modal="true" aria-labelledby="brief-modal-title">
+        <header class="brief-dialog-head">
+          <span class="brief-photo"><img id="brief-modal-img" alt="" /></span>
+          <div>
+            <p id="brief-modal-kicker"></p>
+            <h2 id="brief-modal-title"></h2>
+          </div>
+          <button type="button" class="icon-btn" id="brief-modal-close" aria-label="Cerrar">✕</button>
+        </header>
+        <ul id="brief-modal-list" class="brief-modal-list"></ul>
+        <footer id="brief-pager" class="brief-pager"></footer>
+      </div>
+    </div>
+
+    <div id="campo-modal" class="campo-modal" hidden>
+      <div class="campo-dialog" role="dialog" aria-modal="true" aria-labelledby="campo-modal-name">
+        <header class="campo-dialog-head">
+          <div>
+            <p id="campo-modal-kicker">Acumulado</p>
+            <h2 id="campo-modal-name">Detalle</h2>
+          </div>
+          <button type="button" class="icon-btn" id="campo-modal-close" aria-label="Cerrar">✕</button>
+        </header>
+        <div id="campo-modal-body" class="campo-dialog-body"></div>
+      </div>
+    </div>
+
     <div id="pdf-preview" class="pdf-preview" hidden>
       <div class="pdf-preview-card pdf-preview-card-wide">
         <header class="pdf-preview-head">
@@ -235,16 +399,18 @@
     <script src="vendor/html2pdf.bundle.min.js?v=20261113d"></script>
     <script src="js/config.js?v=20261113d"></script>
     <script src="js/performance.js?v=20261113d"></script>
-    <script src="js/audit.js?v=20261113d"></script>
+    <script src="js/audit.js?v=20261119s"></script>
     <script src="js/api.js?v=20261113d"></script>
-    <script src="js/data.js?v=20261113d"></script>
+    <script src="js/data.js?v=20261119real"></script>
     <script src="js/selects.js?v=20261113d"></script>
     <script src="js/filters.js?v=20261113d"></script>
-    <script src="js/kpis.js?v=20261113d"></script>
-    <script src="js/table.js?v=20261113d"></script>
-    <script src="js/pdf.js?v=20261113h"></script>
-    <script src="js/app.js?v=20261113d"></script>
+    <script src="js/kpis.js?v=20261119s"></script>
+    <script src="js/table.js?v=20261119pase"></script>
+    <script src="js/pdf.js?v=20261119pdf2"></script>
+    <script src="js/app.js?v=20261119real"></script>
     <script src="js/auth.js?v=20261113d"></script>
-    <script src="js/shell.js?v=20261113d"></script>
+    <script src="js/campo.js?v=20261119acta"></script>
+    <script src="js/briefs.js?v=20261119real"></script>
+    <script src="js/shell.js?v=20261119real"></script>
   </body>
 </html>

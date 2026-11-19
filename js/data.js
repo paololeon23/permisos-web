@@ -307,6 +307,11 @@
     if (f.indexOf("falta") >= 0 || f.indexOf("justific") >= 0) return "falta";
     return "otro";
   }
+  /* Estado visible del registro: "Incidencia" si el registro lo indica, si no "Pase de salida". */
+  function tipoRegistro(r) {
+    var t = fold([r.observaciones, r.observacion, r.motivo, r.permiso, r.tipo].join(" "));
+    return t.indexOf("incid") >= 0 ? "Incidencia" : "Pase de salida";
+  }
   function rowDay(r) {
     return toIsoDay(r.fechaRegistro) || toIsoDay(r.fechaSalida) || toIsoDay(r.fecha) || "";
   }
@@ -412,6 +417,8 @@
     normalize: normalize,
     normalizeAll: normalizeAll,
     motivoBadge: motivoBadge,
+    tipoRegistro: tipoRegistro,
+    rowDay: rowDay,
     filterRows: filterRows,
     sortRecords: sortRecords,
     computeKpis: computeKpis,

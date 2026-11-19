@@ -3,6 +3,8 @@
   var QBE = root.QBE || (root.QBE = {});
   var current = null;
   var prevTitle = "";
+  var downloading = false;
+  var pdfCache = { key: "", blob: null, name: "" };
 
   function $(id) {
     return document.getElementById(id);
@@ -420,31 +422,69 @@
     }, 4000);
   }
 
-  /** Descarga archivo .pdf real (nunca HTML) */
+  function cacheKey(p) {
+    return String((p && (p.id || p.fila || p.dni)) || "") + "|" + fileBase(p);
+  }
+
+  function toPdfBlob(out) {
+    if (!out) return null;
+    if (out instanceof Blob) {
+      if (out.size < 100) return null;
+      return out.type === "application/pdf" ? out : new Blob([out], { type: "application/pdf" });
+    }
+    if (out instanceof ArrayBuffer) {
+      if (out.byteLength < 100) return null;
+      return new Blob([out], { type: "application/pdf" });
+    }
+    if (typeof ArrayBuffer !== "undefined" && ArrayBuffer.isView && ArrayBuffer.isView(out)) {
+      if (!out.byteLength || out.byteLength < 100) return null;
+      return new Blob([out], { type: "application/pdf" });
+    }
+    return null;
+  }
+
+  function removeExport() {
+    ["fr16-pdf-export", "fr16-pdf-frame"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) {
+        try {
+          el.remove();
+        } catch (e) {}
+      }
+    });
+    var st = document.getElementById("fr16-export-style");
+    if (st) {
+      try {
+        st.remove();
+      } catch (e2) {}
+    }
+  }
+
+  /** Arma el PDF fuera de la pantalla. No toca el modal ni lo genera dos veces. */
   function downloadPdfFile(inner, filename) {
     var name = String(filename || "QU-GH-FR-16").replace(/\.pdf$/i, "") + ".pdf";
     if (typeof html2pdf === "undefined") {
       if (QBE.shell && QBE.shell.toast) {
         QBE.shell.toast("No se pudo cargar el generador PDF. Pruebe Imprimir → Guardar como PDF.", true);
       }
-      return Promise.resolve(false);
+      return Promise.resolve(null);
     }
 
-    var old = document.getElementById("fr16-pdf-export");
-    if (old) {
-      try {
-        old.remove();
-      } catch (e0) {}
-    }
+    removeExport();
+    var styleEl = document.createElement("style");
+    styleEl.id = "fr16-export-style";
+    styleEl.textContent =
+      formCss() +
+      exportPdfCss() +
+      ".html2pdf__container{left:0!important;right:auto!important;margin:0!important}";
+    document.head.appendChild(styleEl);
 
     var holder = document.createElement("div");
     holder.id = "fr16-pdf-export";
     holder.setAttribute("aria-hidden", "true");
-    // Ancho útil A4 (~202mm) para que no quede “flotando” con márgenes laterales
     holder.style.cssText =
       "position:fixed;left:0;top:0;width:202mm;padding:0;margin:0;background:#fff;z-index:-1;opacity:0;pointer-events:none;";
-    holder.innerHTML =
-      "<style>" + formCss() + exportPdfCss() + "body,html{background:#fff}</style>" + inner;
+    holder.innerHTML = inner;
     document.body.appendChild(holder);
 
     var target = holder.querySelector(".fr16") || holder;
@@ -470,45 +510,26 @@
     };
 
     function cleanup() {
-      try {
-        holder.remove();
-      } catch (e) {}
+      removeExport();
     }
 
-    return html2pdf()
-      .set(opt)
-      .from(target)
-      .outputPdf("blob")
-      .then(function (blob) {
-        if (!blob || !(blob instanceof Blob) || blob.size < 100) {
-          throw new Error("PDF vacío");
-        }
-        var pdfBlob = new Blob([blob], { type: "application/pdf" });
-        triggerBlobDownload(pdfBlob, name);
-        cleanup();
-        return true;
-      })
-      .catch(function () {
-        // Fallback: save() también genera .pdf (nunca HTML)
-        return html2pdf()
+    return new Promise(function (resolve) {
+      waitImages(holder, function () {
+        html2pdf()
           .set(opt)
           .from(target)
-          .save()
-          .then(function () {
+          .outputPdf("blob")
+          .then(function (blob) {
+            var pdfBlob = toPdfBlob(blob);
             cleanup();
-            return true;
+            resolve(pdfBlob);
           })
-          .catch(function (err) {
+          .catch(function () {
             cleanup();
-            if (QBE.shell && QBE.shell.toast) {
-              QBE.shell.toast(
-                "No se pudo generar el PDF. Use Imprimir → Guardar como PDF.",
-                true
-              );
-            }
-            return false;
+            resolve(null);
           });
       });
+    });
   }
 
   function open(row) {
@@ -553,21 +574,48 @@
       if (QBE.shell && QBE.shell.toast) QBE.shell.toast("Abra un permiso primero.", true);
       return;
     }
-    var name = fileBase(current);
+    if (downloading) return;
+    var name = fileBase(current) + ".pdf";
+    var key = cacheKey(current);
+    if (pdfCache.key === key && pdfCache.blob) {
+      triggerBlobDownload(pdfCache.blob, name);
+      if (QBE.shell && QBE.shell.toast) QBE.shell.toast("PDF listo · " + name);
+      if (QBE.audit) QBE.audit.add("Descargar PDF FR-16", current.dni || "");
+      return;
+    }
     var html = docHtml(current);
     var btn = $("pdf-download");
-    if (btn) btn.disabled = true;
+    var label = btn ? btn.textContent : "Descargar .PDF";
+    downloading = true;
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Generando…";
+    }
     if (QBE.shell && QBE.shell.toast) QBE.shell.toast("Generando PDF…");
     if (QBE.audit) QBE.audit.add("Descargar PDF FR-16", current.dni || "");
     downloadPdfFile(html, name)
-      .then(function (ok) {
-        if (btn) btn.disabled = false;
-        if (ok && QBE.shell && QBE.shell.toast) {
-          QBE.shell.toast("PDF listo · " + name + ".pdf");
+      .then(function (blob) {
+        downloading = false;
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = label;
         }
+        if (!blob) {
+          if (QBE.shell && QBE.shell.toast) {
+            QBE.shell.toast("No se pudo generar el PDF. Use Imprimir → Guardar como PDF.", true);
+          }
+          return;
+        }
+        pdfCache = { key: key, blob: blob, name: name };
+        triggerBlobDownload(blob, name);
+        if (QBE.shell && QBE.shell.toast) QBE.shell.toast("PDF listo · " + name);
       })
       .catch(function () {
-        if (btn) btn.disabled = false;
+        downloading = false;
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = label;
+        }
       });
   }
   function printList(rows) {

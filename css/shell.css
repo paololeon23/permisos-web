@@ -1,20 +1,20 @@
 /* Shell de la plantilla: login, sidebar, topbar. Colores del logo QBerries. */
 :root {
-  --red: #e30613;
+  --red: #c96b00;
   --red-dark: #c40610;
-  --orange: #f39200;
+  --orange: #c96b00;
   --yellow: #ffd100;
   --green: #8dc63f;
   --green-dark: #6b9b2d;
   --navy: #5a1a1a;
   --qb: #8dc63f;
-  --qb-dark: #e30613;
+  --qb-dark: #c96b00;
   --qb-soft: #eef7e0;
-  --gold: #f39200;
+  --gold: #c96b00;
   --gold-light: #ffd100;
   --white: #fff;
   --ok: #8dc63f;
-  --alert: #e30613;
+  --alert: #c96b00;
   --bg: #f4f7f0;
   --ink: #1b1f24;
   --muted: #8b93a0;
@@ -200,6 +200,7 @@
   font-size: 13px;
   font-weight: 700;
   margin-bottom: 4px;
+  white-space: nowrap;
 }
 .nav a:hover { background: #f6f8f2; color: var(--ink); }
 .nav a.on { background: var(--green); color: #fff; }
@@ -215,12 +216,33 @@
 .side-card strong { display: block; font-size: 11px; }
 .side-card small {
   display: block;
-  margin-top: 4px;
+  margin-top: 8px;
   color: #8b93a0;
   font-size: 10px;
   font-weight: 600;
   line-height: 1.35;
 }
+.side-mods {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.side-mods li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 800;
+}
+.side-mods a {
+  color: #1b1f24;
+  text-decoration: none;
+}
+.side-mods b { color: #c96b00; }
 
 .shell {
   margin-left: calc(var(--sidebar) + 22px);
@@ -276,7 +298,84 @@
   padding: 0 14px;
   box-shadow: 0 8px 24px rgba(20, 24, 30, 0.04);
 }
+.icon-btn { position: relative; }
 .icon-btn.is-spin .ico { animation: spin 0.8s linear infinite; }
+.note-wrap { position: relative; z-index: 40; }
+.hello-wrap { z-index: 41; }
+.note-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #c96b00;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 16px;
+  text-align: center;
+}
+.note-badge[hidden] { display: none; }
+.note-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: min(340px, calc(100vw - 28px));
+  max-height: 420px;
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid #e4eadc;
+  background:
+    radial-gradient(120px 80px at 100% 0%, rgba(201, 107, 0, 0.16), transparent 70%),
+    linear-gradient(180deg, #ffffff 0%, #f4f8ee 100%);
+  box-shadow: 0 18px 44px rgba(20, 24, 30, 0.12);
+  z-index: 30;
+}
+.note-panel[hidden] { display: none; }
+.note-head { margin: 0 0 10px; padding-bottom: 10px; border-bottom: 1px solid #e4eadc; }
+.note-head p {
+  margin: 0;
+  color: #6b9b2d;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.note-head h3 { margin: 2px 0 0; font-size: 16px; }
+.note-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.note-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid #e4eadc;
+  background: #fff;
+}
+.note-list strong { display: block; font-size: 12px; }
+.note-list small { display: block; color: #6b7280; font-size: 11px; }
+.note-list span {
+  flex: 0 0 auto;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 800;
+  color: #c96b00;
+}
+.note-list em { display: block; font-style: normal; color: #6b7280; font-weight: 700; }
+.note-empty { color: #6b7280; font-size: 12px; font-weight: 700; }
 .icon-btn:disabled { cursor: default; opacity: 0.7; }
 .menu-btn { display: none; }
 .top-actions {
@@ -332,12 +431,23 @@
   color: var(--red);
 }
 .hello-menu button:hover { background: #fff1f2; }
+.side-logout {
+  margin: 0 10px 14px;
+  min-height: 42px;
+  border-radius: 14px;
+  border: 1px solid #f0d2d4;
+  background: #fff;
+  color: var(--red);
+  font-size: 13px;
+  font-weight: 800;
+}
+.side-logout:hover { background: #fff1f2; }
 .hello-pic {
   width: 38px;
   height: 38px;
   padding: 2px;
   border-radius: 50%;
-  background: linear-gradient(160deg, #e30613 0%, #f39200 38%, #ffd100 68%, #8dc63f 100%);
+  background: linear-gradient(160deg, #c96b00 0%, #c96b00 38%, #ffd100 68%, #8dc63f 100%);
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -387,6 +497,9 @@
 .toast.is-bad { background: var(--red); }
 .toast[hidden] { display: none !important; }
 
+@media (min-width: 861px) {
+  .note-panel { left: auto; right: 0; }
+}
 @media (max-width: 860px) {
   .sidebar {
     inset: 0 auto 0 0;
